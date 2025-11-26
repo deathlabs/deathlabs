@@ -1,0 +1,10 @@
+pm_api_url             = "https://192.168.1.175:8006/api2/json"
+pm_api_token_id        = "root@pam!packer"
+pm_api_token_secret    = "ced71a2c-8443-4a4c-b952-f3ee872c9440"
+pm_target_node_name    = "hypervisor-01"
+iso_file                = "local:iso/ubuntu-22.04.4-live-server-amd64.iso"
+vm_id                   = "100"
+vm_template_name        = "ubuntu-server-22.04"
+vm_template_description = "Ubuntu Server 22.04"
+vm_admin_username       = "packer" # TODO: change to something other than "packer".
+vm_admin_password       = "packer" # TODO: change to something other than "packer".

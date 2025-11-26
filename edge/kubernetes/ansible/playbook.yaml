@@ -1,0 +1,37 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: Preparing virtual machine template for cloud-init use
+    ansible.builtin.shell: |
+      while [ ! -f /var/lib/cloud/instance/boot-finished ]; do 
+        echo "Waiting for cloud-init to finish running..."
+        sleep 1
+      done
+      rm /etc/ssh/ssh_host_*
+      truncate -s 0 /etc/machine-id
+      apt -y autoremove --purge
+      apt -y clean
+      apt -y autoclean
+      cloud-init clean
+      rm -f /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg
+      sync
+  - name: Installing Tree
+    ansible.builtin.shell: |
+      apt update
+      apt install tree -y
+#  - name: Installing Docker
+#    ansible.builtin.shell: |
+#      apt update
+#      apt install docker.io -y
+#      systemctl enable docker
+#      systemctl start docker
+#  - name: Installing Kubernetes
+#    ansible.builtin.shell: |
+#      curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+#      echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+#      apt update
+#      apt install kubeadm kubelet kubectl -y
+#      apt-mark hold kubeadm kubelet kubectl
+#      swapoff -a
+#      sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
