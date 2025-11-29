@@ -16,27 +16,27 @@ variable "pm_api_token_secret" {
 
 variable "pm_target_node_name" {
   type    = string
-  default = null 
+  default = "hypervisor-01"
 }
 
-variable "iso_file" {
+variable "iso_file_name" {
   type    = string
-  default = null
+  default = "ubuntu-24.04.3-live-server-amd64.iso"
 }
 
 variable "vm_id" {
   type    = string
-  default = null
+  default = 100
 }
 
 variable "vm_template_name" {
   type    = string
-  default = null
+  default = "ubuntu-server-24.04"
 }
 
 variable "vm_template_description" {
   type    = string
-  default = null
+  default = "Ubuntu Server 24.04"
 }
 
 variable "vm_admin_username" {
@@ -49,17 +49,32 @@ variable "vm_admin_password" {
   default = null
 }
 
-variable "vm_cores" {
-  type    = string
-  default = "2"
+variable "vm_socket_count" {
+  type    = number
+  default = 1
 }
 
-variable "vm_memory" {
-  type    = string
-  default = "4096"
+variable "vm_core_count" {
+  type    = number
+  default = 4
 }
 
-variable "vm_disk_size" {
+variable "vm_memory_gb_size" {
+  type    = number
+  default = 8
+}
+
+variable "vm_disk_gb_size" {
+  type    = number
+  default = 60
+}
+
+variable "cloud_init_server_ip_address" {
   type    = string
-  default = "20G"
+  default = "192.168.1.211"
+}
+
+variable "cloud_init_server_port" {
+  type    = string
+  default = "8336"
 }

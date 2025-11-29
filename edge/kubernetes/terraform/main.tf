@@ -1,71 +1,68 @@
 resource "proxmox_vm_qemu" "controller" {
-  target_node     = var.pm_target_node_name
-  clone           = var.vm_template_name
-  vmid            = 200
-  name            = "k8s-controller"
-  agent           = 1 # enable the QEMU agent service
-  cpu             = "host"
-  sockets         = 1
-  cores           = 2
-  memory          = 4096
-  os_type         = "clout-init"
+  target_node = var.pm_target_node_name
+  clone       = var.vm_template_name
+  vmid        = var.controller_vm_id
+  name        = var.controller_name
+  agent       = 1 # Enable the QEMU agent service.
+  cpu         = "host"
+  sockets     = var.controller_socket_count
+  cores       = var.controller_cores_count
+  memory      = var.controller_memory_size
+  os_type     = "cloud-init"
   disks {
     virtio {
       virtio0 {
         disk {
-          size    = 20
+          size    = var.controller_disk_size
           storage = "local-lvm"
         }
       }
     }
+    scsi {
+      scsi0 {
+        cloudinit {
+          storage = "local-lvm"
+        }
+      }
+    }
+
   }
-  ipconfig0       = "ip=192.168.1.220/24,gw=192.168.1.1"
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+  ipconfig0 = "ip=${var.controller_ip_address}/24,gw=${var.gateway_ip_address}"
 }
 
-resource "proxmox_vm_qemu" "worker_01" {
-  target_node     = var.pm_target_node_name
-  clone           = var.vm_template_name
-  vmid            = 201
-  name            = "k8s-worker-01"
-  agent           = 1 # enable the QEMU agent service
-  cpu             = "host"
-  sockets         = 1
-  cores           = 2
-  memory          = 4096
-  os_type         = "clout-init"
-  disks {
-    virtio {
-      virtio0 {
-        disk {
-          size    = 20
-          storage = "local-lvm"
-        }
-      }
-    }
+resource "proxmox_vm_qemu" "worker" {
+  for_each = {
+    for worker_id in local.worker_ids :
+    tostring(worker_id) => worker_id
   }
-  ipconfig0       = "ip=192.168.1.221/24,gw=192.168.1.1"
-}
 
-resource "proxmox_vm_qemu" "worker_02" {
-  target_node     = var.pm_target_node_name
-  clone           = var.vm_template_name
-  vmid            = 202
-  name            = "k8s-worker-02"
-  agent           = 1 # enable the QEMU agent service
-  cpu             = "host"
-  sockets         = 1
-  cores           = 2
-  memory          = 4096
-  os_type         = "clout-init"
+  target_node = var.pm_target_node_name
+  clone       = var.vm_template_name
+  vmid        = var.controller_vm_id + each.value + 1
+  name        = "${var.worker_name_prefix}-${each.value}"
+  agent       = 1 # Enable the QEMU agent service.
+  cpu         = "host"
+  sockets     = var.worker_socket_count
+  cores       = var.worker_cores_count
+  memory      = var.worker_memory_size
+  os_type     = "cloud-init"
   disks {
     virtio {
       virtio0 {
         disk {
-          size    = 20
+          size    = var.worker_disk_size
           storage = "local-lvm"
         }
       }
     }
   }
-  ipconfig0       = "ip=192.168.1.222/24,gw=192.168.1.1"
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+  ipconfig0 = "ip=${local.worker_ip_addresses[each.value]}/24,gw=${var.gateway_ip_address}"
 }

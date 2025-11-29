@@ -2,5 +2,7 @@
 .vagrant/
 *.iso
 *.box
+*.tfvars
+*.pkrvars.hcl
 packer_cache/
 terraform.tfstate**
