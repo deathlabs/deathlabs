@@ -1,52 +1,39 @@
 source "proxmox-iso" "main" {
-  # Proxmox connection Settings
   proxmox_url              = var.pm_api_url
   username                 = var.pm_api_token_id
   token                    = var.pm_api_token_secret
   insecure_skip_tls_verify = true
 
-  # VM general settings.
   node                 = var.pm_target_node_name
   vm_id                = var.vm_id
   vm_name              = var.vm_template_name
   template_description = var.vm_template_description
 
-  # VM system settings.
-  qemu_agent = true
-  scsi_controller = "virtio-scsi-pci"
-
-  # VM CPU settings.
   sockets = var.vm_socket_count
   cores   = var.vm_core_count
 
-  # VM memory settings.
   memory = var.vm_memory_gb_size * 1024
 
-  # Cloud init settings.
-  cloud_init              = true        # Add an empty Cloud-Init CDROM drive after the virtual machine has been converted to a template.
-  cloud_init_storage_pool = "local-lvm" # Specify where to store the Cloud-Init CDROM.
-  cloud_init_disk_type    = "scsi"
-
-  # VM storage settings.
   disks {
     type         = "virtio"
     disk_size    = "${var.vm_disk_gb_size}G"
     storage_pool = "local-lvm"
   }
 
-  # VM network settings.
   network_adapters {
     model    = "virtio"
     bridge   = "vmbr0"
     firewall = false
   }
 
-  # VM boot settings.
+  http_bind_address = "0.0.0.0"
+  http_port_min     = var.cloud_init_server_port
+  http_port_max     = var.cloud_init_server_port
+  http_directory    = "cloud-init"
+
   boot_iso {
-    type             = "ide"
     iso_file         = "local:iso/${var.iso_file_name}"
-    unmount          = true
-    iso_storage_pool = "local"
+    unmount          = true # Unmount ISO after finishing.
   }
   boot_wait = "5s"
   boot_command = [
@@ -57,18 +44,28 @@ source "proxmox-iso" "main" {
     "boot <enter>",
   ]
 
-  # SSH settings.
-  ssh_timeout  = "30m"
+  # These credentials must match what is defined within the "user-data" file in the "cloud-init" folder.
   ssh_username = var.vm_admin_username
   ssh_password = var.vm_admin_password
+  ssh_timeout  = "30m"
 }
 
 build {
   sources = ["source.proxmox-iso.main"]
-  provisioner "ansible" {
-    playbook_file = "../ansible/playbook.yaml"
-    extra_arguments = [
-      "--scp-extra-args", "'-O'"
+  provisioner "shell" {
+    inline = [
+      # Purge dependencies no longer needed.
+      "sudo apt-get -y autoremove --purge",
+      # Delete .deb files in cached by apt-get.
+      "sudo apt-get -y clean",
+      # Remove the system's unique SSH keys.
+      "sudo rm /etc/ssh/ssh_host_*",
+      # Reduce the machine ID definition file to zero bytes.
+      "sudo truncate -s 0 /etc/machine-id",
+      # Reset the state of cloud-init so it can be ran again.
+      "sudo cloud-init clean",
+      # Commit all pending disk writes before shutting off the machine.
+      "sudo sync",
     ]
   }
 }

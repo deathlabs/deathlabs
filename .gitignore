@@ -6,3 +6,4 @@
 *.pkrvars.hcl
 packer_cache/
 terraform.tfstate**
+inventory.yaml

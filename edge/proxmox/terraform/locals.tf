@@ -2,7 +2,7 @@ locals {
   # Get the last octet of the controller IP address.
   controller_host = tonumber(regex("(\\d+)$", var.controller_ip_address)[0])
 
-  # Turn work counter into a range of numbers.
+  # Turn the "worker" count into a range of numbers.
   worker_ids = range(var.worker_count)
 
   # Generate IP addresses for each worker based on the controller's IP address.

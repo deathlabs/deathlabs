@@ -72,9 +72,10 @@ variable "vm_disk_gb_size" {
 variable "cloud_init_server_ip_address" {
   type    = string
   default = "192.168.1.211"
+  description = "The IP address Proxmox must use to reach the HTTP server started by Packer."
 }
 
 variable "cloud_init_server_port" {
-  type    = string
-  default = "8336"
+  type    = number
+  default = 8336
 }

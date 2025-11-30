@@ -16,8 +16,8 @@ autoinstall:
     install-server: true
     disable_root: true
     ssh_quiet_keygen: true
-    allow_public_ssh_keys: true
     allow-pw: true
+    allow_public_ssh_keys: true
   user-data:
     package_upgrade: false
     timezone: UTC
