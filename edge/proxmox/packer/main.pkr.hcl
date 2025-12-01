@@ -32,8 +32,8 @@ source "proxmox-iso" "main" {
   http_directory    = "cloud-init"
 
   boot_iso {
-    iso_file         = "local:iso/${var.iso_file_name}"
-    unmount          = true # Unmount ISO after finishing.
+    iso_file = "local:iso/${var.iso_file_name}"
+    unmount  = true # Unmount ISO after finishing.
   }
   boot_wait = "5s"
   boot_command = [
@@ -56,7 +56,7 @@ build {
     inline = [
       # Purge dependencies no longer needed.
       "sudo apt-get -y autoremove --purge",
-      # Delete .deb files in cached by apt-get.
+      # Delete .deb files cached by apt.
       "sudo apt-get -y clean",
       # Remove the system's unique SSH keys.
       "sudo rm /etc/ssh/ssh_host_*",

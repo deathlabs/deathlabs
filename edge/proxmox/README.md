@@ -86,6 +86,12 @@ gateway_ip_address    = "192.168.1.1"
 controller_ip_address = "192.168.1.200"
 ```
 
+**Step 12.** Text goes here.
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
 **Step 13.** Build the lab using the provided `Makefile`.
 ```bash
 make build/lab
