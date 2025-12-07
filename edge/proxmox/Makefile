@@ -31,7 +31,7 @@ build/nodes:
 .SILENT: configure/nodes
 
 configure/nodes:
-	ansible-playbook -i ansible/inventory.yaml --ssh-extra-args='-o StrictHostKeyChecking=no' ansible/playbook.yaml
+	ansible-playbook --user packer -i ansible/inventory.yaml --ssh-extra-args='-o StrictHostKeyChecking=no' ansible/playbook.yaml
 
 # ---------------------------------------------------------
 # Build the entire lab.
