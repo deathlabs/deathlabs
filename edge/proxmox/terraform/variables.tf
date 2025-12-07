@@ -41,19 +41,9 @@ variable "cluster_subnet" {
 }
 
 # ------------------------------------------
-# Controller node.
+# Controller nodes.
 # ------------------------------------------
-variable "controller_vm_id" {
-  type    = number
-  default = 200
-}
-
-variable "controller_ip_address" {
-  type    = string
-  default = null
-}
-
-variable "controller_name" {
+variable "controller_name_prefix" {
   type    = string
   default = "controller"
 }
@@ -78,14 +68,24 @@ variable "controller_disk_size" {
   default = 60
 }
 
-# ------------------------------------------
-# Worker nodes.
-# ------------------------------------------
-
-variable "worker_count" {
+variable "controller_count" {
   type    = number
   default = 1
 }
+
+variable "controller_vm_id" {
+  type    = number
+  default = 200
+}
+
+variable "controller_ip_address" {
+  type    = string
+  default = null
+}
+
+# ------------------------------------------
+# Worker nodes.
+# ------------------------------------------
 
 variable "worker_name_prefix" {
   type    = string
@@ -110,4 +110,9 @@ variable "worker_memory_size" {
 variable "worker_disk_size" {
   type    = number
   default = 120
+}
+
+variable "worker_count" {
+  type    = number
+  default = 1
 }

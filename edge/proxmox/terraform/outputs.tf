@@ -1,14 +1,15 @@
 resource "local_file" "ansible_inventory_yaml" {
   content = yamlencode({
-    "controller": {
-      "hosts": {
-        "${proxmox_vm_qemu.controller.default_ipv4_address}": ""
+    controllers = {
+      hosts = {
+        for controller_id, controller in proxmox_vm_qemu.controller:
+          local.controller_ip_addresses[tonumber(controller_id)] => ""
       }
     }
-    "workers": {
-      "hosts": {
-        for name, worker in proxmox_vm_qemu.worker :
-        worker.default_ipv4_address => ""
+    workers = {
+      hosts = {
+        for worker_id, worker in proxmox_vm_qemu.worker:
+          local.worker_ip_addresses[tonumber(worker_id)] => ""
       }
     }
   })

@@ -97,6 +97,11 @@ ssh-add ~/.ssh/id_ed25519
 make build/lab
 ```
 
+**Step 14.** Text goes here.
+```bash
+ansible-playbook -i inventory.yaml playbook.yaml
+```
+
 ### References  
 * [Packer: Input Variables and local variables](https://developer.hashicorp.com/packer/guides/hcl/variables#assigning-variables)
 * [Cloud-Init: Data Sources - NoCloud](https://cloudinit.readthedocs.io/en/latest/reference/datasources/nocloud.html)

@@ -1,19 +1,46 @@
 locals {
-  # Get the last octet of the controller IP address.
-  controller_host = tonumber(regex("(\\d+)$", var.controller_ip_address)[0])
+  controller_ids = {
+    for controller_id in range(var.controller_count):
+      tostring(controller_id) => controller_id
+  }
 
-  # Turn the "worker" count into a range of numbers.
-  worker_ids = range(var.worker_count)
+  worker_ids = {
+    for worker_id in range(var.worker_count):
+      tostring(worker_id) => worker_id
+  }
 
-  # Generate IP addresses for each worker based on the controller's IP address.
-  worker_ip_addresses = [
-    for worker_id in local.worker_ids :
-    format(
-      "%s.%s.%s.%d",
-      split(".", var.controller_ip_address)[0],
-      split(".", var.controller_ip_address)[1],
-      split(".", var.controller_ip_address)[2],
-      local.controller_host + worker_id + 1
-    )
-  ]
+  base_octets = slice(split(".", var.controller_ip_address), 0, 3)
+  base_host   = tonumber(regex("(\\d+)$", var.controller_ip_address)[0])
+
+  controller_ip_addresses = {
+    for controller_id in keys(local.controller_ids):
+      local.controller_ids[controller_id] => format(
+        "%s.%s.%s.%d",
+        local.base_octets[0],
+        local.base_octets[1],
+        local.base_octets[2],
+        local.base_host + local.controller_ids[controller_id]
+      )
+  }
+
+  worker_ip_addresses = {
+    for worker_id in keys(local.worker_ids):
+      local.worker_ids[worker_id] => format(
+        "%s.%s.%s.%d",
+        local.base_octets[0],
+        local.base_octets[1],
+        local.base_octets[2],
+        local.base_host + var.controller_count + local.worker_ids[worker_id] + 1
+      )
+  }
+
+  controller_vmid_map = {
+    for controller_id in keys(local.controller_ids):
+      local.controller_ids[controller_id] => var.controller_vm_id + local.controller_ids[controller_id]
+  }
+
+  worker_vmid_map = {
+    for worker_id in keys(local.worker_ids):
+      local.worker_ids[worker_id] => var.controller_vm_id + var.controller_count + local.worker_ids[worker_id] + 1
+  }
 }

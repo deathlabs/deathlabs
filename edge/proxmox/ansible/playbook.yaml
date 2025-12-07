@@ -1,7 +1,69 @@
 ---
 - hosts: all
   become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   tasks:
-    - name: Text goes here
-      ansible.builtin.shell: |
-        echo "Hello world!"
+    - name: Disable swap
+      replace:
+        path: /etc/fstab
+        regexp: '^/swapfile'
+        replace: '#&'
+    - name: Install curl and gnupg
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+        update_cache: yes
+    - name: Ensure keyrings directory exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+    - name: Download the Kubernetes package repository release key
+      get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key
+        dest: /usr/local/share/Release.key
+        mode: '0644'
+    - name: Extract the Kubernetes package repository GPG key
+      command: |
+        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /usr/local/share/Release.key
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - name: Add the Kubernetes package repository
+      copy:
+        dest: /etc/apt/sources.list.d/kubernetes.list
+        mode: '0644'
+        content: |
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /
+    - name: Install the containerd and Kubernetes binaries 
+      apt:
+        name: 
+          - containerd
+          - kubelet
+          - kubectl
+          - kubeadm
+        state: present
+        update_cache: yes
+    - name: Hold the containerd and Kubernetes binaries at their current version
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - containerd
+        - kubelet
+        - kubectl
+        - kubeadm
+    - name: Enable and start containerd
+      service:
+        name: containerd
+        state: started
+        enabled: yes
+    - name: Enable and start kubelet
+      service:
+        name: kubelet
+        state: started
+        enabled: yes

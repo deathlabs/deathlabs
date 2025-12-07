@@ -1,9 +1,11 @@
 resource "proxmox_vm_qemu" "controller" {
+  for_each = local.controller_ids
+
   target_node = var.pm_target_node_name
 
   clone = var.vm_template_name
-  vmid  = var.controller_vm_id
-  name  = var.controller_name
+  vmid  = local.controller_vmid_map[each.value]
+  name  = "${var.controller_name_prefix}-${each.value}"
   
   cpu {
     sockets = var.controller_socket_count
@@ -29,6 +31,7 @@ resource "proxmox_vm_qemu" "controller" {
       }
     }
   }
+
   os_type = "cloud-init"
 
   network {
@@ -36,19 +39,17 @@ resource "proxmox_vm_qemu" "controller" {
     model  = "virtio"
     bridge = "vmbr0"
   }
-  ipconfig0 = "ip=${var.controller_ip_address}/24,gw=${var.gateway_ip_address}" 
+
+  ipconfig0 = "ip=${local.controller_ip_addresses[each.value]}/24,gw=${var.gateway_ip_address}"
 }
 
 resource "proxmox_vm_qemu" "worker" {
-  for_each = {
-    for worker_id in local.worker_ids :
-    tostring(worker_id) => worker_id
-  }
+  for_each = local.worker_ids
 
   target_node = var.pm_target_node_name
   
   clone = var.vm_template_name
-  vmid  = var.controller_vm_id + each.value + 1
+  vmid  = local.worker_vmid_map[each.value]
   name  = "${var.worker_name_prefix}-${each.value}"
   
   cpu {
@@ -75,6 +76,7 @@ resource "proxmox_vm_qemu" "worker" {
       }
     }
   }
+
   os_type = "cloud-init"
   
   network {
@@ -82,5 +84,6 @@ resource "proxmox_vm_qemu" "worker" {
     model  = "virtio"
     bridge = "vmbr0"
   }
+
   ipconfig0 = "ip=${local.worker_ip_addresses[each.value]}/24,gw=${var.gateway_ip_address}"
 }
